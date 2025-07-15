@@ -4,13 +4,26 @@
     box-sizing: border-box;
 }
 
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
 body {
-    font-family: 'Microsoft YaHei', sans-serif;
+    font-family: 'Ma Shan Zheng', 'Microsoft YaHei', sans-serif;
     background: linear-gradient(135deg, #ffd1dc, #ffe4e1);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 .game-container {
@@ -27,8 +40,45 @@ body {
 
 h1 {
     color: #ff69b4;
-    font-size: 24px;
+    font-size: 28px;
     margin-bottom: 10px;
+    animation: heartbeat 1.5s infinite ease-in-out;
+}
+
+.music-control {
+    margin: 10px 0;
+}
+
+#musicBtn {
+    background-color: rgba(255, 105, 180, 0.7);
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#musicBtn:hover:not(:disabled) {
+    background-color: rgba(255, 105, 180, 0.9);
+    transform: scale(1.05);
+}
+
+#musicBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 添加加载动画 */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+#musicBtn:disabled {
+    animation: pulse 1.5s infinite;
 }
 
 .score {

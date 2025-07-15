@@ -5,12 +5,18 @@ const config = {
     gridSize: 15,
     speed: 150,
     loveMessages: [
-        "宝贝，你是最棒的！❤",
-        "永远爱你！💕",
-        "你就是我的小可爱～😘",
-        "今天也要开开心心的呀！🌈",
-        "有你的每一天都很美好！✨"
-    ]
+        "刘歌，你是我最爱的人！❤",
+        "今天的你也好美～😘",
+        "遇见你是我最大的幸福！💑",
+        "每一天都比昨天更爱你！💕",
+        "有你的每一天都很特别！✨",
+        "你的笑容是我最大的幸福！🌹",
+        "永远陪在你身边！💖",
+        "我爱你胜过世界上的一切！�",
+        "你就是我的整个世界！�",
+        "和你在一起的每一刻都很珍贵！💫"
+    ],
+    specialFoods: ['❤', '💕', '💖', '💗', '💓']
 };
 
 // 游戏状态
@@ -53,7 +59,8 @@ function generateFood() {
     while (true) {
         food = {
             x: Math.floor(Math.random() * (config.canvasWidth / config.gridSize)),
-            y: Math.floor(Math.random() * (config.canvasHeight / config.gridSize))
+            y: Math.floor(Math.random() * (config.canvasHeight / config.gridSize)),
+            type: config.specialFoods[Math.floor(Math.random() * config.specialFoods.length)]
         };
         // 确保食物不会生成在蛇身上
         if (!snake.some(segment => segment.x === food.x && segment.y === food.y)) {
@@ -82,7 +89,7 @@ function draw() {
                      segment.y * config.gridSize + config.gridSize/2, 
                      config.gridSize/2);
         } else {
-            // 蛇身
+            // 蛇身使用渐变色
             ctx.fillStyle = `rgba(255, 105, 180, ${1 - index / snake.length})`;
             ctx.fillRect(segment.x * config.gridSize, 
                         segment.y * config.gridSize, 
@@ -91,10 +98,15 @@ function draw() {
         }
     });
 
-    // 绘制食物（小心形）
-    drawHeart(food.x * config.gridSize + config.gridSize/2, 
-             food.y * config.gridSize + config.gridSize/2, 
-             config.gridSize/3);
+    // 绘制特殊食物
+    ctx.font = `${config.gridSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(
+        food.type,
+        food.x * config.gridSize + config.gridSize/2,
+        food.y * config.gridSize + config.gridSize/2
+    );
 }
 
 // 绘制心形
@@ -152,12 +164,63 @@ function isGameOver(head) {
     return snake.some(segment => segment.x === head.x && segment.y === head.y);
 }
 
+// 背景音乐设置
+const bgMusic = new Audio('M800003ZeX8F1z3dOX.mp3');
+bgMusic.loop = true;
+let isMusicPlaying = false;
+
+// 音乐加载处理
+bgMusic.addEventListener('canplaythrough', () => {
+    document.getElementById('musicBtn').disabled = false;
+    console.log('音乐加载完成');
+});
+
+bgMusic.addEventListener('error', (e) => {
+    console.error('音乐加载失败:', e);
+    document.getElementById('musicBtn').textContent = '❌ 音乐加载失败';
+});
+
+// 音乐控制
+document.getElementById('musicBtn').addEventListener('click', async () => {
+    try {
+        if (isMusicPlaying) {
+            await bgMusic.pause();
+            isMusicPlaying = false;
+            document.getElementById('musicBtn').textContent = '🔇 播放音乐';
+        } else {
+            // 重新加载音频
+            bgMusic.currentTime = 0;
+            const playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isMusicPlaying = true;
+                    document.getElementById('musicBtn').textContent = '🎵 暂停音乐';
+                }).catch(error => {
+                    console.error('播放失败:', error);
+                    document.getElementById('musicBtn').textContent = '❌ 播放失败';
+                });
+            }
+        }
+    } catch (error) {
+        console.error('音乐控制出错:', error);
+    }
+});
+
 // 游戏结束
 function endGame() {
     clearInterval(gameLoop);
+    gameLoop = null;
     isGameRunning = false;
     startBtn.textContent = '重新开始';
-    loveMessageElement.textContent = `游戏结束啦！最终得分：${score}分 💕`;
+    if (isMusicPlaying) {
+        bgMusic.pause();
+    }
+    
+    // 显示特殊的游戏结束消息
+    const finalMessage = score > 50 ? 
+        `刘歌宝贝真厉害！得了${score}分！你就是我的小天使～` :
+        `刘歌宝贝加油！有${score}分呢！你永远是最棒的！`;
+    loveMessageElement.textContent = finalMessage;
 }
 
 // 开始游戏
@@ -165,12 +228,20 @@ function startGame() {
     if (isGameRunning) {
         clearInterval(gameLoop);
         isGameRunning = false;
-        startBtn.textContent = '开始游戏';
+        startBtn.textContent = '继续游戏';
+        if (isMusicPlaying) {
+            bgMusic.pause();
+        }
     } else {
-        initGame();
+        if (!gameLoop) {
+            initGame();
+        }
         isGameRunning = true;
         startBtn.textContent = '暂停';
         gameLoop = setInterval(moveSnake, config.speed);
+        if (isMusicPlaying) {
+            bgMusic.play();
+        }
     }
 }
 
